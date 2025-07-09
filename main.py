@@ -14,7 +14,7 @@ if not pinecone_env:
 
 # ✅ Initialize Pinecone client
 pc = Pinecone(api_key=pinecone_api_key, environment=pinecone_env)
-drug_index = pc.Index("fake-drug")
+drug_index = pc.Index("fake-drugs")
 baby_index = pc.Index("fake-baby")
 
 # ✅ FastAPI app
