@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from pinecone import Pinecone
-from sentence_transformers import SentenceTransformer
-from functools import lru_cache
 import os
 
 # ✅ Load environment variables
@@ -14,24 +12,19 @@ if not pinecone_api_key:
 if not pinecone_env:
     raise ValueError("⚠️ PINECONE_ENVIRONMENT is not set!")
 
-# ✅ Initialize Pinecone and indexes
+# ✅ Initialize Pinecone client
 pc = Pinecone(api_key=pinecone_api_key, environment=pinecone_env)
 drug_index = pc.Index("drug-product")
 baby_index = pc.Index("baby-product")
 
-# ✅ Lazy load the smallest model
-@lru_cache(maxsize=1)
-def get_model():
-    return SentenceTransformer("paraphrase-MiniLM-L3-v2")
-
-# ✅ Start FastAPI app
+# ✅ FastAPI app
 app = FastAPI(
     title="Fake Product Checker API",
-    description="Verify if a drug or baby product is real or fake using similarity search.",
-    version="1.0.0"
+    description="Verify if a drug or baby product is real or fake using Pinecone semantic search.",
+    version="2.0.0"
 )
 
-# ✅ Baby product schema
+# ✅ Schemas
 class BabyProductInput(BaseModel):
     name: str
     brand_name: str
@@ -42,7 +35,6 @@ class BabyProductInput(BaseModel):
     package_description: str
     visible_expiriry_date: str
 
-# ✅ Drug product schema
 class DrugProductInput(BaseModel):
     drug_name: str
     price: int
@@ -58,11 +50,18 @@ class DrugProductInput(BaseModel):
     nafdac_number_present: str
     package_description: str
 
-# ✅ Shared classify function
+# ✅ Lightweight classify function using Pinecone's hosted embedder
 def classify_product(user_text, index, threshold=0.8):
-    model = get_model()
-    vector = model.encode(user_text).tolist()
-    result = index.query(vector=vector, top_k=3, include_metadata=True)
+    try:
+        response = pc.inference.embed(
+            model="llama-text-embed-v2",
+            inputs=[{"text": user_text}],
+            parameters={"input_type": "passage"}
+        )
+        vector = response[0]["values"]
+        result = index.query(vector=vector, top_k=3, include_metadata=True)
+    except Exception as e:
+        return f"❌ Error during embedding/query: {str(e)}"
 
     if not result["matches"]:
         return "⚠️ No similar product found in the database."
@@ -70,7 +69,6 @@ def classify_product(user_text, index, threshold=0.8):
     for match in result["matches"]:
         score = match["score"]
         text = match["metadata"]["text"]
-
         if score >= threshold:
             if "fake" in text.lower():
                 reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "No reason provided."
@@ -82,7 +80,7 @@ def classify_product(user_text, index, threshold=0.8):
     top_score = result["matches"][0]["score"]
     return f"⚠️ Product is unfamiliar (score: {top_score:.2f}). Please verify manually."
 
-# ✅ Baby endpoint
+# ✅ Endpoint: Baby Product
 @app.post("/verify-baby-product")
 def verify_baby_product(data: BabyProductInput):
     user_text = f"""
@@ -97,7 +95,7 @@ def verify_baby_product(data: BabyProductInput):
     """
     return {"result": classify_product(user_text, baby_index)}
 
-# ✅ Drug endpoint
+# ✅ Endpoint: Drug Product
 @app.post("/verify-drug-product")
 def verify_drug_product(data: DrugProductInput):
     user_text = f"""
@@ -117,7 +115,7 @@ def verify_drug_product(data: DrugProductInput):
     """
     return {"result": classify_product(user_text, drug_index)}
 
-# ✅ Run it (Railway/Render will handle port env)
+# ✅ Uvicorn entry point
 import uvicorn
 
 if __name__ == "__main__":
