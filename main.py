@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from pinecone import Pinecone
 import os
+import uvicorn
 
 # ✅ Load environment variables
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
@@ -50,7 +51,7 @@ class DrugProductInput(BaseModel):
     nafdac_number_present: str
     package_description: str
 
-# ✅ Lightweight classify function using Pinecone's hosted embedder
+# ✅ Refactored classify function
 def classify_product(user_text, index, threshold=0.8):
     try:
         response = pc.inference.embed(
@@ -61,24 +62,43 @@ def classify_product(user_text, index, threshold=0.8):
         vector = response[0]["values"]
         result = index.query(vector=vector, top_k=3, include_metadata=True)
     except Exception as e:
-        return f"❌ Error during embedding/query: {str(e)}"
+        return {
+            "verdict": "error",
+            "score": None,
+            "reason": f"❌ Error during embedding/query: {str(e)}"
+        }
 
     if not result["matches"]:
-        return "⚠️ No similar product found in the database."
+        return {
+            "verdict": "no_match",
+            "score": None,
+            "reason": "⚠️ No similar product found in the database."
+        }
 
     for match in result["matches"]:
         score = match["score"]
         text = match["metadata"]["text"]
         if score >= threshold:
+            reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "No reason provided."
             if "fake" in text.lower():
-                reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "No reason provided."
-                return f"❌ Likely FAKE (score: {score:.2f})\nReason: {reason}"
+                return {
+                    "verdict": "fake",
+                    "score": round(score, 2),
+                    "reason": reason
+                }
             elif "real" in text.lower():
-                reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "No reason provided."
-                return f"✅ Looks REAL (score: {score:.2f})\nReason: {reason}"
+                return {
+                    "verdict": "real",
+                    "score": round(score, 2),
+                    "reason": reason
+                }
 
     top_score = result["matches"][0]["score"]
-    return f"⚠️ Product is unfamiliar (score: {top_score:.2f}). Please verify manually."
+    return {
+        "verdict": "unfamiliar",
+        "score": round(top_score, 2),
+        "reason": "⚠️ Product is unfamiliar. Please verify manually."
+    }
 
 # ✅ Endpoint: Baby Product
 @app.post("/verify-baby-product")
@@ -93,7 +113,7 @@ def verify_baby_product(data: BabyProductInput):
     Package: {data.package_description}
     Expiry Visible: {data.visible_expiriry_date}
     """
-    return {"result": classify_product(user_text, baby_index)}
+    return classify_product(user_text, baby_index)
 
 # ✅ Endpoint: Drug Product
 @app.post("/verify-drug-product")
@@ -113,11 +133,9 @@ def verify_drug_product(data: DrugProductInput):
     NAFDAC Number Present: {data.nafdac_number_present}
     Package Description: {data.package_description}
     """
-    return {"result": classify_product(user_text, drug_index)}
+    return classify_product(user_text, drug_index)
 
 # ✅ Uvicorn entry point
-import uvicorn
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
