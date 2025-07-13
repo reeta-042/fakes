@@ -25,10 +25,10 @@ baby_index = pc.Index("fake-baby")
 
 # ✅ MongoDB client setup
 client = MongoClient(mongo_uri)
-db = client.veritrue  # Use the 'veritrue' database
+db = client.VeriTrue  
 
-drug_collection = db.drug_verifications
-baby_collection = db.baby_verifications
+drug_collection = db.drug-verifications
+baby_collection = db.baby-verifications
 
 # ✅ FastAPI app
 app = FastAPI(
