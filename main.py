@@ -1,22 +1,34 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from pinecone import Pinecone
+from pymongo import MongoClient
 import os
 import uvicorn
+from datetime import datetime
 
 # ✅ Load environment variables
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 pinecone_env = os.getenv("PINECONE_ENVIRONMENT")
+mongo_uri = os.getenv("MONGODB_URI")  
 
 if not pinecone_api_key:
     raise ValueError("⚠️ PINECONE_API_KEY is not set!")
 if not pinecone_env:
     raise ValueError("⚠️ PINECONE_ENVIRONMENT is not set!")
+if not mongo_uri:
+    raise ValueError("⚠️ MONGODB_URI is not set!")
 
 # ✅ Initialize Pinecone client
 pc = Pinecone(api_key=pinecone_api_key, environment=pinecone_env)
 drug_index = pc.Index("fake-drugs")
 baby_index = pc.Index("fake-baby")
+
+# ✅ MongoDB client setup
+client = MongoClient(mongo_uri)
+db = client.veritrue  # Use the 'veritrue' database
+
+drug_collection = db.drug_verifications
+baby_collection = db.baby_verifications
 
 # ✅ FastAPI app
 app = FastAPI(
@@ -51,7 +63,7 @@ class DrugProductInput(BaseModel):
     nafdac_number_present: str
     package_description: str
 
-# ✅ Refactored classify function
+# ✅ Classify function
 def classify_product(user_text, index, threshold=0.8):
     try:
         response = pc.inference.embed(
@@ -113,7 +125,17 @@ def verify_baby_product(data: BabyProductInput):
     Package: {data.package_description}
     Expiry Visible: {data.visible_expiriry_date}
     """
-    return classify_product(user_text, baby_index)
+    result = classify_product(user_text, baby_index)
+
+    # ✅ Store to MongoDB
+    baby_collection.insert_one({
+        "user_input": data.dict(),
+        "verification_result": result,
+        "timestamp": datetime.utcnow(),
+        "verified": {"status": "pending"}
+    })
+
+    return result
 
 # ✅ Endpoint: Drug Product
 @app.post("/verify-drug-product")
@@ -133,9 +155,19 @@ def verify_drug_product(data: DrugProductInput):
     NAFDAC Number Present: {data.nafdac_number_present}
     Package Description: {data.package_description}
     """
-    return classify_product(user_text, drug_index)
+    result = classify_product(user_text, drug_index)
 
-# ✅ Uvicorn entry point
+    # ✅ Store to MongoDB
+    drug_collection.insert_one({
+        "user_input": data.dict(),
+        "verification_result": result,
+        "timestamp": datetime.utcnow(),
+        "verified": {"status": "pending"}
+    })
+
+    return result
+
+# ✅ Run on Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
