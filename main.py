@@ -5,6 +5,8 @@ from pymongo import MongoClient
 import os
 import uvicorn
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # ✅ Load environment variables
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
@@ -36,7 +38,17 @@ app = FastAPI(
     description="Verify if a drug or baby product is real or fake using Pinecone semantic search.",
     version="2.0.0"
 )
+origins = [
+    "http://localhost:3000",  
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,         
+    allow_credentials=True,
+    allow_methods=["*"],           
+    allow_headers=["*"],            
+)
 # ✅ Schemas
 class BabyProductInput(BaseModel):
     name: str
