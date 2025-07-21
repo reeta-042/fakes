@@ -39,7 +39,9 @@ app = FastAPI(
     version="2.0.0"
 )
 origins = [
-    "http://localhost:3000",  
+    "http://localhost:3000",               
+    
+    "https://veritrue.vercel.app"          
 ]
 
 app.add_middleware(
