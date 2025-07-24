@@ -33,7 +33,7 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
         prompt += (
             f"A baby product has been reviewed and verified as authentic.\n"
             f"Please keep the total explanation within 300 characters.\n" 
-            f"Please share a calm and reassuring summary for the user.\n\n"
+            f"Please share a calm and reassuring response to the user like you are a caregiver.\n\n"
             f"Include:\n"
             f"- A very brief product summary\n"
             f"- One gentle key benefit of the product\n"
@@ -46,6 +46,7 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
     else:
         prompt += (
             f"This product’s authenticity could not be confidently verified.\n"
+            f"Keep the total explanation within 100 characters.\n"
             f"Reason: {reason}\n"
             f"Advise the user to double-check the packaging, NAFDAC number and expiry date consult support if unsure.\n"
         )
