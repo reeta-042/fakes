@@ -6,57 +6,65 @@ client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1"
 )
-# drug_explainer.py
+
+# 💊 Drug Explainer Module
 def generate_drug_llm(user_input: dict, verification_result: dict, product_url: str = None):
     verdict = verification_result.get("verdict", "unfamiliar")
-    label = verification_result.get("label", "unknown")
     reason = verification_result.get("reason", "Reason not specified.")
 
     prompt = ""
 
     if verdict == "fake":
         prompt += (
-            f"A drug was submitted and is suspected to be fake.\n"
-            f"Explain the issue in clear, simple terms — avoid medical jargon.\n"
+            f"A drug product submitted by the user is suspected to be fake.\n"
+            f"Use the following fields to guide your explanation:\n"
+            f"- Drug Name: {user_input['drug_name']}\n"
+            f"- Dosage: {user_input['dosage']}\n"
+            f"- Form: {user_input['form']}\n"
+            f"- Medicine Type: {user_input['medicine_type']}\n"
+            f"- Pack Size: {user_input['pack_size']}\n"
+            f"- Brand Name: {user_input['brand_name']}\n"
+            f"- Indications: {user_input['indications']}\n"
+            f"- Packaging Description: {user_input['package_description']}\n"
+            f"- Expiry Date Visible: {user_input['expiry_date_available']}\n"
+            f"- NAFDAC Number Present: {user_input['nafdac_number_present']}\n"
             f"Use a calm but serious tone to warn the user.\n"
-            f"Keep the entire explanation within 300 characters.\n\n"
-            f"1. Fake vs Real Explanation:\n"
-            f"- Briefly state what's wrong and how it differs from a real version,make sure to pinpoint the key differnces.\n"
-        
-        )
-
-        prompt += (
-            f"\n2. Health Risk Warnings:\n"
-            f"- Describe briefly in plain language what can happen if someone uses a fake version.\n"
-        )
-
-        prompt += (
-            f"\n3. Safer Alternatives:\n"
-            f"- Recommend one verified, safer drug that treat the same condition.\n"
-            f"- Keep suggestions short and practical.\n"
+            f"Explain clearly and stay under 300 characters.\n\n"
+            f"Explain:\n"
+            f"1. Why this product may be counterfeit\n"
+            f"2. What health risks could arise from using it\n"
+            f"3. Suggest a verified alternative that treats the same condition\n"
         )
 
     elif verdict == "real":
         prompt += (
-            f"This drug has been checked and confirmed to be genuine.\n"
-            f"Use a calm and reassuring tone to talk to the user, avoid medical jargon,speak like a layman.\n"
-            f"Explain this clearly in simple terms, and stay under 300 characters total.\n\n"
+            f"A drug product submitted by the user has been verified as authentic.\n"
+            f"Use the following fields to guide your explanation:\n"
+            f"- Drug Name: {user_input['drug_name']}\n"
+            f"- Dosage: {user_input['dosage']}\n"
+            f"- Form: {user_input['form']}\n"
+            f"- Medicine Type: {user_input['medicine_type']}\n"
+            f"- Indications: {user_input['indications']}\n"
+            f"- Packaging Description: {user_input['package_description']}\n"
+            f"- NAFDAC Number Present: {user_input['nafdac_number_present']}\n"
+            f"Speak in simple, reassuring language — like explaining to a friend.\n"
+            f"Keep the explanation under 300 characters.\n\n"
             f"Include:\n"
-            f"- A short product summary\n"
-            f"- One clear benefit (e.g., relieves pain, lowers fever)\n"
-            f"- Two safety tips (e.g., when to take it, what to avoid)\n"
-            f"- Packaging highlights (e.g., sealed cap, printed expiry)\n"
-            f"- Two common FAQs with answers the average person might ask\n"
+            f"- Short product summary\n"
+            f"- One key benefit\n"
+            f"- Two basic safety tips\n"
+            f"- One packaging clue\n"
+            f"- Two FAQs and answers (keep general)\n"
         )
 
     else:
         prompt += (
             f"We couldn’t confirm if this drug is real or fake.\n"
             f"Reason: {reason}\n"
-            f"Tell the user to check the seal, expiry date, and NAFDAC registration.\n"
+            f"Advise the user to inspect the packaging, NAFDAC number, and expiry date.\n"
+            f"Stay under 100 characters. Keep it cautious, calm, and helpful.\n"
         )
 
-    
     response = client.chat.completions.create(
         model="meta-llama/llama-3.3-70b-instruct:free",
         messages=[{"role": "user", "content": prompt}],
