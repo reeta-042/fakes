@@ -6,7 +6,8 @@ import os
 import uvicorn
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
-
+from baby_llm import generate_baby_llm
+from drug_llm import generate_drug_llm
 
 # ✅ Load environment variables
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
@@ -28,7 +29,6 @@ baby_index = pc.Index("fake-baby")
 # ✅ MongoDB client setup
 client = MongoClient(mongo_uri)
 db = client.VeriTrue  
-
 drug_collection = db.drug_verifications
 baby_collection = db.baby_verifications
 
@@ -38,19 +38,20 @@ app = FastAPI(
     description="Verify if a drug or baby product is real or fake using Pinecone semantic search.",
     version="2.0.0"
 )
+
 origins = [
-    "http://localhost:3000",               
-    
-    "https://veritrue.vercel.app"          
+    "http://localhost:3000",
+    "https://veritrue.vercel.app"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,         
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],           
-    allow_headers=["*"],            
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 # ✅ Schemas
 class BabyProductInput(BaseModel):
     name: str
@@ -91,39 +92,41 @@ def classify_product(user_text, index, threshold=0.8):
         return {
             "verdict": "error",
             "score": None,
-            "reason": f"❌ Error during embedding/query: {str(e)}"
+            "reason": f"❌ Error during embedding/query: {str(e)}",
+            "Product_url": ""
         }
 
     if not result["matches"]:
         return {
             "verdict": "no_match",
             "score": None,
-            "reason": "⚠️ No similar product found in the database."
+            "reason": "⚠️ No similar product found in the database.",
+            "Product_url": ""
         }
 
     for match in result["matches"]:
         score = match["score"]
-        text = match["metadata"]["text"]
-        if score >= threshold:
-            reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "No reason provided."
-            if "fake" in text.lower():
-                return {
-                    "verdict": "fake",
-                    "score": round(score, 2),
-                    "reason": reason
-                }
-            elif "real" in text.lower():
-                return {
-                    "verdict": "real",
-                    "score": round(score, 2),
-                    "reason": reason
-                }
+        metadata = match["metadata"]
+        text = metadata.get("text", "")
+        product_url = metadata.get("Product_url", "")
 
-    top_score = result["matches"][0]["score"]
+        if score >= threshold:
+            reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "Reason not specified."
+            verdict = "fake" if "fake" in text.lower() else "real" if "real" in text.lower() else "unfamiliar"
+            return {
+                "verdict": verdict,
+                "score": round(score, 2),
+                "reason": reason,
+                "Product_url": product_url
+            }
+
+    fallback = result["matches"][0]["metadata"]
+    reason = fallback.get("text", "").split("Reason:")[-1].strip() if "Reason:" in fallback.get("text", "") else "Reason not specified."
     return {
         "verdict": "unfamiliar",
-        "score": round(top_score, 2),
-        "reason": "⚠️ Product is unfamiliar. Please verify manually."
+        "score": round(result["matches"][0]["score"], 2),
+        "reason": reason,
+        "Product_url": fallback.get("Product_url", "")
     }
 
 # ✅ Endpoint: Baby Product
@@ -139,17 +142,33 @@ def verify_baby_product(data: BabyProductInput):
     Package: {data.package_description}
     Expiry Visible: {data.visible_expiriry_date}
     """
-    result = classify_product(user_text, baby_index)
 
-    # ✅ Store to MongoDB
+    result = classify_product(user_text, baby_index)
+    product_url = result.get("Product_url", "")
+    reason = result.get("reason", "")
+
+    prompt = generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
+    llm_explanation = call_llm_model(prompt)
+
     baby_collection.insert_one({
         "user_input": data.dict(),
-        "verification_result": result,
+        "verification_result": {
+            "verdict": result["verdict"],
+            "score": result["score"],
+            "reason": reason,
+            "Product_url": product_url,
+            "llm_explanation": llm_explanation
+        },
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
 
-    return result
+    return {
+        "verdict": result["verdict"],
+        "score": result["score"],
+        "llm_explanation": llm_explanation,
+        "product_url": product_url
+    }
 
 # ✅ Endpoint: Drug Product
 @app.post("/verify-drug-product")
@@ -169,17 +188,33 @@ def verify_drug_product(data: DrugProductInput):
     NAFDAC Number Present: {data.nafdac_number_present}
     Package Description: {data.package_description}
     """
-    result = classify_product(user_text, drug_index)
 
-    # ✅ Store to MongoDB
+    result = classify_product(user_text, drug_index)
+    product_url = result.get("Product_url", "")
+    reason = result.get("reason", "")
+
+    prompt = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
+    llm_explanation = call_llm_model(prompt)
+
     drug_collection.insert_one({
         "user_input": data.dict(),
-        "verification_result": result,
+        "verification_result": {
+            "verdict": result["verdict"],
+            "score": result["score"],
+            "reason": reason,
+            "Product_url": product_url,
+            "llm_explanation": llm_explanation
+        },
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
 
-    return result
+    return {
+        "verdict": result["verdict"],
+        "score": result["score"],
+        "llm_explanation": llm_explanation,
+        "product_url": product_url
+    }
 
 # ✅ Run on Render
 if __name__ == "__main__":
