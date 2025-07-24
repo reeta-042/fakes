@@ -7,7 +7,7 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
-# baby_explainer.py
+# 🍼 Baby Explainer Module
 def generate_baby_llm(user_input: dict, verification_result: dict, product_url: str = None):
     verdict = verification_result.get("verdict", "unfamiliar")
     label = verification_result.get("label", "unknown")
@@ -17,31 +17,32 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
 
     if verdict == "fake":
         prompt += (
-            f"A baby product has been submitted and is suspected to be counterfeit.\n"
+            f"A baby product submitted by the user is suspected to be fake.\n"
+            f"Use the following fields to guide your response:\n"
+            f"- Name: {user_input['name']}\n"
+            f"- Product Type: {user_input['product_type']}\n"
+            f"- Age Group: {user_input['age_group']}\n"
+            f"- Platform: {user_input['platform']}\n"
+            f"- Package Description: {user_input['package_description']}\n"
             f"Use a calm, reassuring tone — but also issue a clear warning if the product is potentially unsafe.\n"
             f"Explain the suspected issue clearly and gently.\n"
-            f"Please keep the total explanation within 300 characters.\n" 
-            f"Here’s what you should explain to the user:\n\n"
-            f"1. Fake vs Real Explanation:\n"
-            f"- Clearly and briefly explain why this product is flagged as fake, Compare it with a real version of the product,make sure to pinpoint key differnces.\n"
-            
-        )
-
-        prompt += (
-            f"\n3. Health Risk Warnings:\n"
-            f"- Based on the product type, age group, or packaging, briefly explain possible dangers of using a fake version.\n"
-        )
-
-        prompt += (
-            f"\n4. Safer Alternatives:\n"
-            f"- Recommend 1–3 similar, verified baby products from trusted brands.\n"
-            f"- Briefly Suggest items suitable for the same age group or use-case.\n"
+            f"Please keep the total explanation within 300 characters.\n\n"
+            f"Explain:\n"
+            f"- Why this product may be counterfeit (compare with how a real version looks or behaves)\n"
+            f"- Health risks based on baby age group and packaging type\n"
+            f"- Suggest one or two safe, verified products suitable for similar use\n"
         )
 
     elif verdict == "real":
         prompt += (
-            f"A baby product has been reviewed and verified as authentic.\n"
-            f"Please keep the total explanation within 300 characters.\n" 
+            f"A baby product submitted by the user is verified as authentic.\n"
+            f"Use the following fields to guide your response:\n"
+            f"- Name: {user_input['name']}\n"
+            f"- Product Type: {user_input['product_type']}\n"
+            f"- Age Group: {user_input['age_group']}\n"
+            f"- Platform: {user_input['platform']}\n"
+            f"- Package Description: {user_input['package_description']}\n"
+            f"Please keep the total explanation within 300 characters.\n"
             f"Please share a calm and reassuring response to the user like you are a caregiver.\n\n"
             f"Include:\n"
             f"- A very brief product summary\n"
@@ -50,14 +51,12 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Two short frequently asked questions with helpful answers\n"
         )
 
-      
-
     else:
         prompt += (
             f"This product’s authenticity could not be confidently verified.\n"
             f"Keep the total explanation within 100 characters.\n"
             f"Reason: {reason}\n"
-            f"Advise the user to double-check the packaging, NAFDAC number and expiry date consult support if unsure.\n"
+            f"Advise the user to double-check the packaging, NAFDAC number and expiry date. Consult support if unsure.\n"
         )
 
     response = client.chat.completions.create(
