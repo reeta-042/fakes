@@ -1,3 +1,12 @@
+from openai import OpenAI
+import os
+
+# 🔌 Connect to OpenRouter
+client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1"
+)
+
 # baby_explainer.py
 def generate_baby_llm(user_input: dict, verification_result: dict, product_url: str = None):
     verdict = verification_result.get("verdict", "unfamiliar")
@@ -51,4 +60,14 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"Advise the user to double-check the packaging, NAFDAC number and expiry date consult support if unsure.\n"
         )
 
-    return prompt
+    response = client.chat.completions.create(
+        model="meta-llama/llama-3.3-70b-instruct:free",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+        max_tokens=500
+    )
+
+    if response and response.choices and response.choices[0].message:
+        return response.choices[0].message.content
+    else:
+        return "Sorry, we couldn’t generate an explanation at the moment."
