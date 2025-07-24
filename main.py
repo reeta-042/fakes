@@ -147,7 +147,7 @@ def verify_baby_product(data: BabyProductInput):
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
-    prompt = generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
+    explanation= generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
     
 
     baby_collection.insert_one({
@@ -157,7 +157,7 @@ def verify_baby_product(data: BabyProductInput):
             "score": result["score"],
             "reason": reason,
             "Product_url": product_url,
-            "llm_explanation": llm_explanation
+            
         },
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
@@ -166,7 +166,8 @@ def verify_baby_product(data: BabyProductInput):
     return {
         "verdict": result["verdict"],
         "score": result["score"],
-        "llm_explanation": llm_explanation,
+        "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say"
+    },
         "product_url": product_url
     }
 
@@ -193,7 +194,7 @@ def verify_drug_product(data: DrugProductInput):
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
-    prompt = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
+    explanation = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
     
 
     drug_collection.insert_one({
@@ -203,7 +204,7 @@ def verify_drug_product(data: DrugProductInput):
             "score": result["score"],
             "reason": reason,
             "Product_url": product_url,
-            "llm_explanation": llm_explanation
+            
         },
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
@@ -212,7 +213,8 @@ def verify_drug_product(data: DrugProductInput):
     return {
         "verdict": result["verdict"],
         "score": result["score"],
-        "llm_explanation": llm_explanation,
+        "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say"
+    }
         "product_url": product_url
     }
 
