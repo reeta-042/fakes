@@ -14,8 +14,8 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"Please keep the total explanation within 300 characters.\n" 
             f"Here’s what you should explain to the user:\n\n"
             f"1. Fake vs Real Explanation:\n"
-            f"- Clearly and briefly explain why this product is flagged as fake, Compare it with a real variety of the product\n"
-            f"- Reason: {reason}\n"
+            f"- Clearly and briefly explain why this product is flagged as fake, Compare it with a real version of the product,make sure to pinpoint key differnces.\n"
+            
         )
 
         prompt += (
