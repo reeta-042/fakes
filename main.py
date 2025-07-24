@@ -148,7 +148,7 @@ def verify_baby_product(data: BabyProductInput):
     reason = result.get("reason", "")
 
     prompt = generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
-    llm_explanation = call_llm_model(prompt)
+    
 
     baby_collection.insert_one({
         "user_input": data.dict(),
@@ -194,7 +194,7 @@ def verify_drug_product(data: DrugProductInput):
     reason = result.get("reason", "")
 
     prompt = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
-    llm_explanation = call_llm_model(prompt)
+    
 
     drug_collection.insert_one({
         "user_input": data.dict(),
