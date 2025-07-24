@@ -157,7 +157,7 @@ def verify_baby_product(data: BabyProductInput):
             "reason": reason,
             "Product_url": product_url
         },
-        "llm_explanation": explanation,
+        
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
@@ -202,7 +202,7 @@ def verify_drug_product(data: DrugProductInput):
             "reason": reason,
             "Product_url": product_url
         },
-        "llm_explanation": explanation,
+        
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
