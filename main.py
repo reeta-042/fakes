@@ -147,8 +147,7 @@ def verify_baby_product(data: BabyProductInput):
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
-    explanation= generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
-    
+    explanation = generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
 
     baby_collection.insert_one({
         "user_input": data.dict(),
@@ -156,9 +155,9 @@ def verify_baby_product(data: BabyProductInput):
             "verdict": result["verdict"],
             "score": result["score"],
             "reason": reason,
-            "Product_url": product_url,
-            
+            "Product_url": product_url
         },
+        "llm_explanation": explanation,
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
@@ -166,8 +165,7 @@ def verify_baby_product(data: BabyProductInput):
     return {
         "verdict": result["verdict"],
         "score": result["score"],
-        "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say"
-    },
+        "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say",
         "product_url": product_url
     }
 
@@ -195,7 +193,6 @@ def verify_drug_product(data: DrugProductInput):
     reason = result.get("reason", "")
 
     explanation = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
-    
 
     drug_collection.insert_one({
         "user_input": data.dict(),
@@ -203,9 +200,9 @@ def verify_drug_product(data: DrugProductInput):
             "verdict": result["verdict"],
             "score": result["score"],
             "reason": reason,
-            "Product_url": product_url,
-            
+            "Product_url": product_url
         },
+        "llm_explanation": explanation,
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
@@ -213,8 +210,7 @@ def verify_drug_product(data: DrugProductInput):
     return {
         "verdict": result["verdict"],
         "score": result["score"],
-        "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say"
-    }
+        "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say",
         "product_url": product_url
     }
 
