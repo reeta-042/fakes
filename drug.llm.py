@@ -13,7 +13,7 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"Use a calm but serious tone to warn the user.\n"
             f"Keep the entire explanation within 300 characters.\n\n"
             f"1. Fake vs Real Explanation:\n"
-            f"- Briefly state what's wrong and how it differs from a real version,make sure to pinpoint the key details.\n"
+            f"- Briefly state what's wrong and how it differs from a real version,make sure to pinpoint the key differnces.\n"
         
         )
 
