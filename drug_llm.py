@@ -4,7 +4,7 @@ from google.genai import types
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # 💊 Drug Explainer Module
-def generate_drug_llm(user_input: dict, verification_result: dict, product_url: str = None):
+def generate_drug_llm(user_input: dict, verification_result: dict, product_url: str = None,language: str = "English"):
     verdict = verification_result.get("verdict", "unfamiliar")
     reason = verification_result.get("reason", "Reason not specified.")
 
