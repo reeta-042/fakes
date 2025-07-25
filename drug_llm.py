@@ -1,11 +1,7 @@
-from openai import OpenAI
 import os
-
-# 🔌 Connect to OpenRouter
-client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
-)
+from google import genai
+from google.genai import types
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # 💊 Drug Explainer Module
 def generate_drug_llm(user_input: dict, verification_result: dict, product_url: str = None):
@@ -70,14 +66,18 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
         
         )
 
-    response = client.chat.completions.create(
-        model="qwen/qwen3-coder:free",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=500
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0) # Disables thinking
+        ),
     )
 
-    if response and response.choices and response.choices[0].message:
-        return response.choices[0].message.content
+    # It's good practice to return the response from the function
+    if response and hasattr(response, 'text'):
+        return response.text
     else:
-        return "Sorry, we couldn’t generate an explanation at the moment."
+        return "⚠️ No valid response received from AI ASSISTANT "
+
+
