@@ -62,6 +62,7 @@ class BabyProductInput(BaseModel):
     age_group: str
     package_description: str
     visible_expiriry_date: str
+    language:str
 
 class DrugProductInput(BaseModel):
     drug_name: str
@@ -77,6 +78,7 @@ class DrugProductInput(BaseModel):
     platform: str
     nafdac_number_present: str
     package_description: str
+    language:str
 
 # ✅ Classify function
 def classify_product(user_text, index, threshold=0.8):
@@ -141,6 +143,7 @@ def verify_baby_product(data: BabyProductInput):
     Age Group: {data.age_group}
     Package: {data.package_description}
     Expiry Visible: {data.visible_expiriry_date}
+    Language: {data.language}
     """
 
     result = classify_product(user_text, baby_index)
@@ -186,6 +189,7 @@ def verify_drug_product(data: DrugProductInput):
     Platform: {data.platform}
     NAFDAC Number Present: {data.nafdac_number_present}
     Package Description: {data.package_description}
+    Language : {data.language}
     """
 
     result = classify_product(user_text, drug_index)
