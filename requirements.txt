@@ -3,4 +3,4 @@ uvicorn
 pinecone
 pydantic
 pymongo
-genai
+google-genai
