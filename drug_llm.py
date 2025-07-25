@@ -34,6 +34,7 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"1. Why this product may be counterfeit\n"
             f"2. What health risks could arise from using it\n"
             f"3. Suggest a verified alternative that treats the same condition\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
         )
 
     elif verdict == "real":
@@ -55,6 +56,8 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Two basic safety tips\n"
             f"- One packaging clue\n"
             f"- Two FAQs and answers (keep general)\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+        
         )
 
     else:
@@ -63,6 +66,8 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"Reason: {reason}\n"
             f"Advise the user to inspect the packaging, NAFDAC number, and expiry date.\n"
             f"Stay under 100 characters. Keep it cautious, calm, and helpful.\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+        
         )
 
     response = client.chat.completions.create(
