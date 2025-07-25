@@ -25,12 +25,12 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Expiry Date Visible: {user_input['expiry_date_available']}\n"
             f"- NAFDAC Number Present: {user_input['nafdac_number_present']}\n"
             f"Use a calm but serious tone to warn the user.\n"
-            f"Explain clearly and stay under 300 characters.\n\n"
+            f"Explain clearly and stay on exactly 300 characters.\n\n"
             f"Explain:\n"
             f"1. Why this product may be counterfeit\n"
             f"2. What health risks could arise from using it\n"
             f"3. Suggest a verified alternative that treats the same condition\n"
-            f"- Respond using the selected Language:{user_input['language']}\n"
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
         )
 
     elif verdict == "real":
