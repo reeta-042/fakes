@@ -60,7 +60,7 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
         )
 
     response = client.chat.completions.create(
-        model="meta-llama/llama-3.3-70b-instruct:free",
+        model="qwen/qwen3-coder:free",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
         max_tokens=500
