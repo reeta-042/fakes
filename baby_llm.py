@@ -5,7 +5,7 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 
 # 🍼 Baby Explainer Module
-def generate_baby_llm(user_input: dict, verification_result: dict, product_url: str = None):
+def generate_baby_llm(user_input: dict, verification_result: dict, product_url: str = None,language: str = "English"):
     verdict = verification_result.get("verdict", "unfamiliar")
     label = verification_result.get("label", "unknown")
     reason = verification_result.get("reason", "Reason not specified.")
