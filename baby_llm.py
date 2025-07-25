@@ -1,11 +1,8 @@
-from openai import OpenAI
 import os
+from google import genai
+from google.genai import types
+client = genai.Client(api_key=os_env.get("GEMINI_API_KEY"))
 
-# 🔌 Connect to OpenRouter
-client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
-)
 
 # 🍼 Baby Explainer Module
 def generate_baby_llm(user_input: dict, verification_result: dict, product_url: str = None):
@@ -31,6 +28,9 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Why this product may be counterfeit (compare with how a real version looks or behaves)\n"
             f"- Health risks based on baby age group and packaging type\n"
             f"- Suggest one or two safe, verified products suitable for similar use\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+        
+            
         )
 
     elif verdict == "real":
@@ -49,6 +49,8 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"- One gentle key benefit of the product\n"
             f"- Two bullet-point safety precautions\n"
             f"- Two short frequently asked questions with helpful answers\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+        
         )
 
     else:
@@ -57,16 +59,23 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"Keep the total explanation within 100 characters.\n"
             f"Reason: {reason}\n"
             f"Advise the user to double-check the packaging, NAFDAC number and expiry date. Consult support if unsure.\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+        
         )
 
-    response = client.chat.completions.create(
-        model="qwen/qwen3-coder:free",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-        max_tokens=500
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            thinking_config=types.ThinkingConfig(thinking_budget=0) # Disables thinking
+        ),
     )
 
-    if response and response.choices and response.choices[0].message:
-        return response.choices[0].message.content
+    # It's good practice to return the response from the function
+    if response and hasattr(response, 'text'):
+        return response.text
     else:
-        return "Sorry, we couldn’t generate an explanation at the moment."
+        return "⚠️ No valid response received from AI ASSISTANT."
+
+
+
