@@ -23,12 +23,12 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Package Description: {user_input['package_description']}\n"
             f"Use a calm, reassuring tone — but also issue a clear warning if the product is potentially unsafe.\n"
             f"Explain the suspected issue clearly and gently.\n"
-            f"Please keep the total explanation within 300 characters.\n\n"
+            f"Please keep the total explanation exactly on  300 characters.\n\n"
             f"Explain:\n"
             f"- Why this product may be counterfeit (compare with how a real version looks or behaves)\n"
             f"- Health risks based on baby age group and packaging type\n"
             f"- Suggest one or two safe, verified products suitable for similar use\n"
-            f"- Respond using the selected Language:{user_input['language']}\n"
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
         
             
         )
