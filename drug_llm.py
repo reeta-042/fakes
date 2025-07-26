@@ -12,6 +12,7 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
 
     if verdict == "fake":
         prompt += (
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
             f"A drug product submitted by the user is suspected to be fake.\n"
             f"Use the following fields to guide your explanation:\n"
             f"- Drug Name: {user_input['drug_name']}\n"
@@ -30,11 +31,13 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"1. Why this product may be counterfeit\n"
             f"2. What health risks could arise from using it\n"
             f"3. Suggest a verified alternative that treats the same condition\n"
-            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
+            
         )
 
     elif verdict == "real":
         prompt += (
+
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
             f"A drug product submitted by the user has been verified as authentic.\n"
             f"Use the following fields to guide your explanation:\n"
             f"- Drug Name: {user_input['drug_name']}\n"
@@ -52,18 +55,17 @@ def generate_drug_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Two basic safety tips\n"
             f"- One packaging clue\n"
             f"- Two FAQs and answers (keep general)\n"
-            f"- Respond using the selected Language:{user_input['language']}\n"
-        
+            
         )
 
     else:
         prompt += (
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
             f"We couldn’t confirm if this drug is real or fake.\n"
             f"Reason: {reason}\n"
             f"Advise the user to inspect the packaging, NAFDAC number, and expiry date.\n"
             f"Stay under 100 characters. Keep it cautious, calm, and helpful.\n"
-            f"- Respond using the selected Language:{user_input['language']}\n"
-        
+            
         )
 
     response = client.models.generate_content(
