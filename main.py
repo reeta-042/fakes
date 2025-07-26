@@ -62,7 +62,7 @@ class BabyProductInput(BaseModel):
     age_group: str
     package_description: str
     visible_expiriry_date: str
-    language:str
+    language: str
 
 class DrugProductInput(BaseModel):
     drug_name: str
@@ -78,7 +78,7 @@ class DrugProductInput(BaseModel):
     platform: str
     nafdac_number_present: str
     package_description: str
-    language:str
+    language: str
 
 # ✅ Classify function
 def classify_product(user_text, index, threshold=0.8):
@@ -134,7 +134,8 @@ def classify_product(user_text, index, threshold=0.8):
 # ✅ Endpoint: Baby Product
 @app.post("/verify-baby-product")
 def verify_baby_product(data: BabyProductInput):
-    user_text = f"""
+    # Without language – used for embedding
+    description_only_text = f"""
     Product: {data.name}
     Brand: {data.brand_name}
     Price: {data.price_in_naira} NGN
@@ -143,24 +144,23 @@ def verify_baby_product(data: BabyProductInput):
     Age Group: {data.age_group}
     Package: {data.package_description}
     Expiry Visible: {data.visible_expiriry_date}
-    Language: {data.language}
     """
 
-    result = classify_product(user_text, baby_index)
+    result = classify_product(description_only_text, baby_index)
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
+    # With language – used for LLM explanation
     explanation = generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
 
     baby_collection.insert_one({
-        "user_input": data.dict(),
+        "description_only_text": data.dict(),
         "verification_result": {
             "verdict": result["verdict"],
             "score": result["score"],
             "reason": reason,
             "Product_url": product_url
         },
-        
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
@@ -175,7 +175,8 @@ def verify_baby_product(data: BabyProductInput):
 # ✅ Endpoint: Drug Product
 @app.post("/verify-drug-product")
 def verify_drug_product(data: DrugProductInput):
-    user_text = f"""
+    # Without language – used for embedding
+    description_only_text = f"""
     Drug Name: {data.drug_name}
     Price: {data.price} NGN
     Dosage: {data.dosage}
@@ -189,24 +190,23 @@ def verify_drug_product(data: DrugProductInput):
     Platform: {data.platform}
     NAFDAC Number Present: {data.nafdac_number_present}
     Package Description: {data.package_description}
-    Language : {data.language}
     """
 
-    result = classify_product(user_text, drug_index)
+    result = classify_product(description_only_text, drug_index)
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
+    # With language – used for LLM explanation
     explanation = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
 
     drug_collection.insert_one({
-        "user_input": data.dict(),
+        "description_only_text": data.dict(),
         "verification_result": {
             "verdict": result["verdict"],
             "score": result["score"],
             "reason": reason,
             "Product_url": product_url
         },
-        
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
     })
