@@ -14,6 +14,7 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
 
     if verdict == "fake":
         prompt += (
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
             f"A baby product submitted by the user is suspected to be fake.\n"
             f"Use the following fields to guide your response:\n"
             f"- Name: {user_input['name']}\n"
@@ -22,19 +23,20 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Platform: {user_input['platform']}\n"
             f"- Package Description: {user_input['package_description']}\n"
             f"Use a calm, reassuring tone — but also issue a clear warning if the product is potentially unsafe.\n"
-            f"Explain the suspected issue clearly and gently.\n"
+            f"Explain the suspected issue clearly and gently, your responses should also be informative.\n"
             f"Please keep the total explanation exactly on  300 characters.\n\n"
             f"Explain:\n"
             f"- Why this product may be counterfeit (compare with how a real version looks or behaves)\n"
             f"- Health risks based on baby age group and packaging type\n"
             f"- Suggest one or two safe, verified products suitable for similar use\n"
-            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
+            
         
             
         )
 
     elif verdict == "real":
         prompt += (
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
             f"A baby product submitted by the user is verified as authentic.\n"
             f"Use the following fields to guide your response:\n"
             f"- Name: {user_input['name']}\n"
@@ -43,23 +45,24 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
             f"- Platform: {user_input['platform']}\n"
             f"- Package Description: {user_input['package_description']}\n"
             f"Please keep the total explanation within 300 characters.\n"
-            f"Please share a calm and reassuring response to the user like you are a caregiver.\n\n"
+            f"Please share a calm and reassuring response to the user like you are a caregiver,let your responses be informative\n\n"
             f"Include:\n"
             f"- A very brief product summary\n"
             f"- One gentle key benefit of the product\n"
             f"- Two bullet-point safety precautions\n"
             f"- Two short frequently asked questions with helpful answers\n"
-            f"- Respond using the selected Language:{user_input['language']}\n"
+            
         
         )
 
     else:
         prompt += (
+            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
             f"This product’s authenticity could not be confidently verified.\n"
             f"Keep the total explanation within 100 characters.\n"
             f"Reason: {reason}\n"
             f"Advise the user to double-check the packaging, NAFDAC number and expiry date. Consult support if unsure.\n"
-            f"- Respond using the selected Language:{user_input['language']}\n"
+            
         
         )
 
