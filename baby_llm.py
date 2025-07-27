@@ -59,7 +59,8 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
 
     else:
         prompt += (
-            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+            f"- Let your response be in html format \n"
             f"This product’s authenticity could not be confidently verified.\n"
             f"Keep the total explanation within 100 characters.\n"
             f"Reason: {reason}\n"
