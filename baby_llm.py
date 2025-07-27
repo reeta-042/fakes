@@ -14,7 +14,8 @@ def generate_baby_llm(user_input: dict, verification_result: dict, product_url: 
 
     if verdict == "fake":
         prompt += (
-            f"- Respond using the selected Nigerian Language:{user_input['language']}\n"
+            f"- Respond using the selected Language:{user_input['language']}\n"
+            f"- Let your response also be in an html format \n"
             f"A baby product submitted by the user is suspected to be fake.\n"
             f"Use the following fields to guide your response:\n"
             f"- Name: {user_input['name']}\n"
