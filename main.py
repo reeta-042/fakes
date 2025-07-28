@@ -8,6 +8,7 @@ from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
 from baby_llm import generate_baby_llm
 from drug_llm import generate_drug_llm
+import re  # ✅ added for regex
 
 # ✅ Load environment variables
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
@@ -80,6 +81,11 @@ class DrugProductInput(BaseModel):
     package_description: str
     language: str
 
+# ✅ Utility: Extract product_url from text
+def extract_product_url(text):
+    match = re.search(r'Product_url\s*:\s*(https?://[^\s]+)', text)
+    return match.group(1).strip() if match else ""
+
 # ✅ Classify function
 def classify_product(user_text, index, threshold=0.8):
     try:
@@ -110,7 +116,7 @@ def classify_product(user_text, index, threshold=0.8):
         score = match["score"]
         metadata = match["metadata"]
         text = metadata.get("text", "")
-        product_url = metadata.get("Product_url", "")
+        product_url = metadata.get("Product_url", "") or extract_product_url(text)
 
         if score >= threshold:
             reason = text.split("Reason:")[-1].strip() if "Reason:" in text else "Reason not specified."
@@ -123,12 +129,14 @@ def classify_product(user_text, index, threshold=0.8):
             }
 
     fallback = result["matches"][0]["metadata"]
-    reason = fallback.get("text", "").split("Reason:")[-1].strip() if "Reason:" in fallback.get("text", "") else "Reason not specified."
+    fallback_text = fallback.get("text", "")
+    reason = fallback_text.split("Reason:")[-1].strip() if "Reason:" in fallback_text else "Reason not specified."
+    product_url = fallback.get("Product_url", "") or extract_product_url(fallback_text)
     return {
         "verdict": "unfamiliar",
         "score": round(result["matches"][0]["score"], 2),
         "reason": reason,
-        "Product_url": fallback.get("Product_url", "")
+        "Product_url": product_url
     }
 
 # ✅ Endpoint: Baby Product
@@ -218,4 +226,3 @@ def verify_drug_product(data: DrugProductInput):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-                          
