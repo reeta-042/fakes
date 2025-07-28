@@ -12,7 +12,7 @@ from drug_llm import generate_drug_llm
 # ✅ Load environment variables
 pinecone_api_key = os.getenv("PINECONE_API_KEY")
 pinecone_env = os.getenv("PINECONE_ENVIRONMENT")
-mongo_uri = os.getenv("MONGODB_URI")  
+mongo_uri = os.getenv("MONGODB_URI")
 
 if not pinecone_api_key:
     raise ValueError("⚠️ PINECONE_API_KEY is not set!")
@@ -28,7 +28,7 @@ baby_index = pc.Index("fake-baby")
 
 # ✅ MongoDB client setup
 client = MongoClient(mongo_uri)
-db = client.VeriTrue  
+db = client.VeriTrue
 drug_collection = db.drug_verifications
 baby_collection = db.baby_verifications
 
@@ -134,7 +134,6 @@ def classify_product(user_text, index, threshold=0.8):
 # ✅ Endpoint: Baby Product
 @app.post("/verify-baby-product")
 def verify_baby_product(data: BabyProductInput):
-    # Without language – used for embedding
     description_only_text = f"""
     Product: {data.name}
     Brand: {data.brand_name}
@@ -150,7 +149,6 @@ def verify_baby_product(data: BabyProductInput):
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
-    # With language – used for LLM explanation
     explanation = generate_baby_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
 
     baby_collection.insert_one({
@@ -175,7 +173,6 @@ def verify_baby_product(data: BabyProductInput):
 # ✅ Endpoint: Drug Product
 @app.post("/verify-drug-product")
 def verify_drug_product(data: DrugProductInput):
-    # Without language – used for embedding
     description_only_text = f"""
     Drug Name: {data.drug_name}
     Price: {data.price} NGN
@@ -196,7 +193,6 @@ def verify_drug_product(data: DrugProductInput):
     product_url = result.get("Product_url", "")
     reason = result.get("reason", "")
 
-    # With language – used for LLM explanation
     explanation = generate_drug_llm(user_input=data.dict(), verification_result=result, product_url=product_url)
 
     drug_collection.insert_one({
@@ -222,3 +218,4 @@ def verify_drug_product(data: DrugProductInput):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
+                          
