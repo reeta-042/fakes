@@ -119,7 +119,7 @@ def classify_product(user_text, index, threshold=0.8):
                 "verdict": verdict,
                 "score": round(score, 2),
                 "reason": reason,
-                "Product_url": product_url
+                "Product_url": Product_url
             }
 
     fallback = result["matches"][0]["metadata"]
@@ -159,7 +159,7 @@ def verify_baby_product(data: BabyProductInput):
             "verdict": result["verdict"],
             "score": result["score"],
             "reason": reason,
-            "Product_url": product_url
+            "Product_url": Product_url
         },
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
@@ -169,7 +169,7 @@ def verify_baby_product(data: BabyProductInput):
         "verdict": result["verdict"],
         "score": result["score"],
         "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say",
-        "product_url": product_url
+        "product_url": Product_url
     }
 
 # ✅ Endpoint: Drug Product
@@ -205,7 +205,7 @@ def verify_drug_product(data: DrugProductInput):
             "verdict": result["verdict"],
             "score": result["score"],
             "reason": reason,
-            "Product_url": product_url
+            "Product_url": Product_url
         },
         "timestamp": datetime.utcnow(),
         "verified": {"status": "pending"}
@@ -215,7 +215,7 @@ def verify_drug_product(data: DrugProductInput):
         "verdict": result["verdict"],
         "score": result["score"],
         "What_vero_has_to_say": explanation if explanation else "Vero has nothing to say",
-        "product_url": product_url
+        "product_url": Product_url
     }
 
 # ✅ Run on Render
