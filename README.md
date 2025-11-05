@@ -1,6 +1,5 @@
 
 ‎
-‎---
 ‎ VeriTrue — AI-Powered Fake Product Detection System
 ‎
 ‎VeriTrue is an AI-driven verification platform that helps users detect fake baby products instantly.
@@ -8,8 +7,7 @@
 ‎
 ‎
 ‎---
-‎
-‎ Key Features
+‎‎ Key Features
 ‎
 ‎🔍 AI Similarity Detection:
 ‎Uses Pinecone’s llama-text-embed-v2 embeddings to compare product details with verified authentic and counterfeit data.
@@ -29,9 +27,7 @@
 ‎Deployed on Render:
 ‎Fully cloud-hosted for smooth performance and public access.
 ‎
-‎
-‎
-‎---
+‎‎---
 ‎
 ‎Tech Stack
 ‎
@@ -66,8 +62,7 @@
 ‎
 ‎
 ‎
-‎
-‎---
+‎‎---
 ‎
 ‎ Motivation
 ‎
@@ -97,7 +92,7 @@
 ‎
 ‎
 ‎
-‎---
+‎
 ‎
 
 ‎
